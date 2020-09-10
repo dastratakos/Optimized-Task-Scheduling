@@ -137,9 +137,10 @@ Perform |numTrials| of the following:
 On each trial, take the MDP |mdp| and an RLAlgorithm |rl| and simulate the
 RL algorithm according to the dynamics of the MDP.
 Each trial will run for at most |maxIterations|.
+If writeData=True, writes graphable data (reward) for each trial to a csv file.
 Return the list of rewards that we get for each trial.
 '''
-def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=True, sort=False):
+def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=False, sort=False, writeData=True):
     # Return i in [0, ..., len(probs)-1] with probability probs[i].
     def sample(probs):
         target = random.random()
@@ -149,7 +150,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=True, sort=False)
             if accum >= target: return i
         raise Exception("Invalid probs: %s" % probs)
 
-    # Clear the memory log (due to some error)
+    # Clear the memory log (if error occurs)
     # f = open('qStarMemoryLog.csv', 'w')
     # f.truncate()    
     # f.close()
@@ -174,10 +175,17 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=True, sort=False)
         state, action, reward = tuple(stateTup), tuple(actionTup), float(line[2])
         rl.qStarActions[state] = [action, reward]
     f.close()
-    print('Before: ', len(rl.qStarActions))
 
+    datafile = None
+    if writeData:       # creates a file so that we can write new data that tracks Q-learning progress for each episode
+        with open('plotdata_trainingDataTEST2.csv', 'w') as newfile:
+            newfile.close()
+        datafile = open('plotdata_trainingDataTEST2.csv', 'w')
+        dfWriter = csv.writer(datafile)
+
+    # print('Before: ', len(rl.qStarActions))
     totalRewards = []  # The rewards we get on each trial
-    for trial in range(numTrials):
+    for trial in range(1, numTrials+1):
         print('Trial number: ', trial)
         state = mdp.startState()
         sequence = [state]
@@ -215,14 +223,26 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=True, sort=False)
                 rl.qStarActions[tuple(s)[0]] = [a, r]
         totalRewards.append(totalReward)
 
+        if writeData:   # writes data into a file to track Q-learning progress for each episode
+            dfWriter.writerow([trial+1, totalReward])
+
+        rl.updateExplorationProb(trial, numTrials)
         print('After: ', len(rl.qStarActions))
-        # Write in new qStar data to qStar memory log
-        f = open('qStarMemoryLog.csv', 'w')
-        fileWriter = csv.writer(f)
-        fileWriter.writerow(['State', 'Action', 'Reward'])
-        for key in rl.qStarActions:
-            fileWriter.writerow([str(key), str(rl.qStarActions[key][0]), str(rl.qStarActions[key][1])])
-        f.close()
-        # 
+
+    datafile.close()
+
+    # Write in new qStar data to qStar memory log
+    f = open('qStarMemoryLog.csv', 'w')
+    fileWriter = csv.writer(f)
+    fileWriter.writerow(['State', 'Action', 'Reward'])
+    for key in rl.qStarActions:
+        fileWriter.writerow([str(key), str(rl.qStarActions[key][0]), str(rl.qStarActions[key][1])])
+    f.close()
+    # 
+
+    # Back-up the memory log (in case some error occurs)
+    # f = open('qStarMemoryLogCpy.csv', 'w')
+    # f.truncate()    
+    # f.close()
 
     return totalRewards

@@ -52,7 +52,7 @@ class RacquetsMDP(util.MDP):
         for lineNum, row in enumerate(fileReader):
             daysUntilDue = (1 * (row[2] == 'Exp')) + (3 * (row[2] == 'Std'))
             reqType = row[2]                        # to build request string
-            if row[1] == 'TRUE': reqType += 'SMT'   # to build request string
+            if row[1] == 'True': reqType += 'SMT'   # to build request string
             else: reqType += 'Reg'                  # to build request string
             
             if lineNum == 0:
@@ -69,6 +69,7 @@ class RacquetsMDP(util.MDP):
                     day.append((reqType, daysUntilDue))
                     currDate = row[3]
         data.append(day)
+        print(data)
         return data
         
     '''
@@ -101,7 +102,7 @@ class RacquetsMDP(util.MDP):
     corresponding to the states reachable from |state| when taking |action|.
     If |state| is an end state, returns an empty list [].
     '''
-    def succAndProbReward(self, state, action, bounded=True, bound=6):
+    def succAndProbReward(self, state, action, bounded=True, bound=7):
         # end state when we have processed the last day
         if state[1] == self.numDays + 1: return []
         
@@ -157,7 +158,7 @@ class RacquetsMDP(util.MDP):
     Sets the discount factor.
     '''
     def discount(self):
-        return 1
+        return 1.0
 
 '''
 function: identityFeatureExtractor
@@ -186,6 +187,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
         explorationProb: the epsilon value indicating how frequently the policy
         returns a random action
     '''
+    # def __init__(self, actions, discount, featureExtractor=identityFeatureExtractor, explorationProb=0.2):
     def __init__(self, actions, discount, featureExtractor=identityFeatureExtractor, explorationProb=0.2):
         self.actions = actions
         self.discount = discount
@@ -242,6 +244,17 @@ class QLearningAlgorithm(util.RLAlgorithm):
         name, value = self.featureExtractor(state, action)
         self.weights[name] -= self.getStepSize() * (prediction - target) * value
 
+    '''
+    function: updateExplorationProb
+    ----------
+    This function is called by util.py with the current trial number and the total trials, 
+    which is used to update the exploration probability (epsilon).
+    '''
+    def updateExplorationProb(self, trialNum, totalTrials):
+        # return                                                                    # Uncomment this for constant exploration probability
+        self.explorationProb -= self.explorationProb/(totalTrials) * trialNum       # Uncomment this for epsilon-decreasing exploration probability
+        # self.explorationProb -= self.explorationProb/(totalTrials * 5) * trialNum # Another version of epsilon-decreasing exploration probability
+
 '''
 function: testValueIteration
 ----------
@@ -263,16 +276,23 @@ function: testQLearning
 ----------
 Test function for Q-Learning.
 '''
-def testQLearning(mdp):
+def testQLearning(mdp, printPolicy=False):
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount())
     rewards = util.simulate(mdp, qLearn, 500)
+    print('-'*30, 'Data collection for bar graphs', '-'*30)
+    print('     Dataset: training_data_TEST2.csv')
+    print('     Epsilon: Decreasing, 0.2')
+    print('     Episodes: 500')
+    print('         ---Average reward: ', sum(rewards)/len(rewards))
+    print('         ---Max reward (converged value): ', max(rewards))
     # for i in range(0,300,25):
     #     print('Average reward, episodes %d - %d: %d' %(i, i+25, sum(rewards[i:i+25]) / 25))    
     qLearn.explorationProb = 0
     
-    print('qLearn.qStarActions:')
-    for elem in sorted(qLearn.qStarActions):
-        print(elem, '\t:\t', qLearn.qStarActions[elem])
+    if printPolicy:
+        print('qLearn.qStarActions:')
+        for elem in sorted(qLearn.qStarActions):
+            print(elem, '\t:\t', qLearn.qStarActions[elem])
         
     return qLearn
 
@@ -304,11 +324,13 @@ def main():
     valueIteration = False
     qLearning = True
 
-#    mdp = RacquetsMDP(4, 'test_data_save.csv', 6)
-#    mdp = RacquetsMDP(15, 'training_data.csv', 10)
-#    mdp = RacquetsMDP(13, 'training_data_small.csv', 10)
+    # mdp = RacquetsMDP(4, 'test_data_save.csv', 6)
+    # mdp = RacquetsMDP(15, 'training_data.csv', 10)
+    # mdp = RacquetsMDP(13, 'training_data_small.csv', 6)
     # mdp = RacquetsMDP(13, 'training_data_big.csv', 6)
-    mdp = RacquetsMDP(13, 'training_data_1211_1.csv', 12)
+    # mdp = RacquetsMDP(13, 'training_data_2019-12-12_1842.csv', 8)
+    # mdp = RacquetsMDP(13, 'training_data_TEST2.csv', 6)
+    mdp = RacquetsMDP(13, 'training_data_TEST2.csv', 6)
     if valueIteration:
         valueIter = testValueIteration(mdp)
     if qLearning:

@@ -5,10 +5,11 @@ import sys
 import csv
 import sklearn
 import numpy as np
-import util, math, random, collections
+import util, math, random
+import datetime
 
 # FILENAME to write to
-FILE_NAME = 'training_data_1211_1.csv' 
+FILE_NAME = 'training_data_' + str(datetime.datetime.now()) + '.csv' 
 
 # Data labels
 # 	Request ID: 		Integer 	|| range(0, len(numRequests))
@@ -31,9 +32,12 @@ SUNDAY_HOURS = 5
 REGULAR_HOURS = 9
 REQUESTS_PER_WEEK = 93.1818
 REQUESTS_PER_HOUR = REQUESTS_PER_WEEK / ((REGULAR_HOURS*6) + (SUNDAY_HOURS*1))
-REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}
-SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}
-MAX_DAILY_REQ = 16
+REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}		# DEFAULT
+# REGULAR_REQ_WEIGHTS = {'Std': 0.5, 'Exp': 0.42, 'Spd': 0.08}		# HIGH FREQ EXP
+# REGULAR_REQ_WEIGHTS = {'Std': 0.4, 'Exp': 0.09, 'Spd': 0.51}		# HIGH FREQ SPD
+SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}			# DEFAULT
+# SMT_REQ_WEIGHTS = {'Spd': 0.5, 'Exp': 0.25, 'Std': 0.25}			# HIGH FREQ SPD
+MAX_DAILY_REQ = 25
 MIN_DAILY_REQ = 10
 
 DEFAULT_GENERATE_NUMHOURS = 9
