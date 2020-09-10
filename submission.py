@@ -35,9 +35,9 @@ class RacquetsMDP(util.MDP):
         currDate = 0
         for lineNum, row in enumerate(fileReader):
             daysUntilDue = (1*(row[2] == 'Exp')) + (3*(row[2] == 'Std'))
-            reqType = row[2]
-            if row[1] == 'TRUE': reqType += 'SMT'
-            else: reqType += 'Reg'
+            reqType = row[2]                        # to build request string
+            if row[1] == 'TRUE': reqType += 'SMT'   # to build request string
+            else: reqType += 'Reg'                  # to build request string
             if lineNum == 0:
                 continue
             elif lineNum == 1:
@@ -135,17 +135,18 @@ class RacquetsMDP(util.MDP):
         return 1
         
 def testMDP():
+    print('$'*400)
     mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
-    mdp.computeStates()
+    # mdp.computeStates()
     algorithm = ValueIteration() # implemented for us in util.py
     algorithm.solve(mdp, .001)
     print('*' * 60)
     states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
-    for state in states:
-        print('state:', state)
-        print('  optimal action:', algorithm.pi[state])
-        print()
-#    for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
+    # for state in states:
+    #     print('state:', state)
+    #     print('  optimal action:', algorithm.pi[state])
+    #     print()
+    for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
 
 testMDP()
 

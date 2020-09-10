@@ -77,11 +77,12 @@ class ValueIteration(MDPAlgorithm):
             pi = {}
             for state in mdp.states:
                 #print("*****************", mdp.actions(state))
-                for action in mdp.actions(state):
-                    print("action: ", action)
-                    print("xxxxxxxxxxxxx", computeQ(mdp, V, state, action))
+                print('~'*30, 'Calculating optimal policy for a new state: ', state, '~'*30)
+                for action in set(mdp.actions(state)):
+                    print("==Action: ", action)
+                    print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
                 pi[state] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
-                print("pi[state]: ",pi[state])
+                print('pi[state]: ', pi[state])
             return pi
 
         V = collections.defaultdict(float)  # state -> value of state
