@@ -47,14 +47,14 @@ class RacquetsMDP(util.MDP):
                 if row[3] == currDate:
                     day.append((reqType, daysUntilDue))
                 else:
-                    print(day)
                     data.append(day)
                     day = []
                     day.append((reqType, daysUntilDue))
                     currDate = row[3]
         data.append(day)
 #        return tuple(data)
-#        for n, d in enumerate(data): print(n, ' : ', d)
+        print('=' * 36, ' data  ', '=' * 37)
+        for n, d in enumerate(data): print(n, ' : ', d)
         return data
 
     # Start state is an empty list of racquets at the start of Day 0
@@ -65,10 +65,10 @@ class RacquetsMDP(util.MDP):
     NOTE: might need to check for empty list of racquets
     '''
     # Return a list of lists representing actions possible from |state|.
-    # One action is a list of racquet IDs that represent picking any 15 (or less) racquets.
+    # One action is a list of racquets that represent picking any self.numRacquets (or fewer) racquets.
     def actions(self, state):
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
-            return [state[0]] # return list of IDs of all racquets
+            return [state[0]] # return list of all racquets
         # otherwise, there are more racquets to string that can be strung for that day
         return combinations(state[0], self.numRacquets)
 
@@ -77,19 +77,44 @@ class RacquetsMDP(util.MDP):
     # corresponding to the states reachable from |state| when taking |action|.
     # If |state| is an end state, returns an empty list [].
     def succAndProbReward(self, state, action):
-        if state[1] == self.numDays: return [] # end state
+        # end state when we reach the end of the window of days
+        if state[1] == self.numDays + 1: return []
         
-        racquetIDs = set(state[0])
-        
-        # remove racquets based on the action and compute reward of stringing those racquets
-        racquetIDs -= set(action)
+        racquets = list(state[0])
+        strung = []
         
         # TODO: (add in probability of customer unsatisfied -> transition probabilities)
+        for racquet in action:
+            strung.append(racquet)
+        
+        # remove racquets based on the action and compute reward of stringing those racquets
+        for racquet in strung:
+            racquets.remove(racquet)
+        
+        # decrement days until due for remaining racquets
+        for i in range(len(racquets)):
+            racquet = racquets[i]
+            racquets[i] = (racquet[0], racquet[1] -  1)
         
         # add new racquets for next day
         # (generate new data -> transition probabilities?)
-        racquetIDs |= self.data[state[1]]
-        return [((tuple(racquetIDs), state[1] + 1), 1, 1000)]
+#        racquets += self.data[state[1]]
+        if state[1] <= len(self.data) - 1:
+            for racquet in self.data[state[1]]:
+                racquets.append(racquet)
+            
+        # compute reward in $, $2 penalty for each day late
+        reward = 0
+        for racquet in strung:
+            if racquet[0] == 'SpdReg': reward += 40
+            elif racquet[0] == 'ExpReg': reward += 30
+            elif racquet[0] == 'StdReg': reward += 20
+            elif racquet[0] == 'SpdSMT': reward += 18
+            elif racquet[0] == 'ExpSMT': reward += 18
+            elif racquet[0] == 'StdSMT': reward += 18
+            if racquet[1] < 0: reward += -2 * racquet[1]
+            
+        return [((tuple(racquets), state[1] + 1), 1, reward)]
 
     # Set the discount factor (float or integer).
     def discount(self):
@@ -98,14 +123,19 @@ class RacquetsMDP(util.MDP):
 def testMDP():
     mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
     mdp.computeStates()
-    print('*' * 30, 'middle of code', '*' * 30)
     algorithm = ValueIteration() # implemented for us in util.py
-    print('*' * 30, 'you suck', '*' * 30)
     algorithm.solve(mdp, .001)
+    print('*' * 60)
+    states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
+    i = 0
+    for state in states:
+        print('state %d:' % i, state)
+        print('  optimal action:', algorithm.pi[state])
+        print()
+        i += 1
+#    for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
 
-print('start of code')
 testMDP()
-print('end of code')
 
 '''
 ############################################################

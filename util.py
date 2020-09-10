@@ -119,7 +119,7 @@ class MDP:
     # MDPAlgorithms to know which states to compute values and policies for.
     # This function sets |self.states| to be the set of all states.
     def computeStates(self):
-        print('start computeStates')
+        print('=' * 30, 'start computeStates', '=' * 30)
         self.states = set()
         queue = []
         self.states.add(self.startState())
@@ -131,9 +131,9 @@ class MDP:
                     if newState not in self.states:
                         self.states.add(newState)
                         queue.append(newState)
-        print('end computeStates')
-#        print ("%d states" % len(self.states))
-#        print (self.states)
+        print ("%d states" % len(self.states))
+        for state in list(self.states): print('  ', state)
+        print('=' * 30, ' end computeStates ', '=' * 30)
 
 ############################################################
 
