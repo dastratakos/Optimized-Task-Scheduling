@@ -19,11 +19,27 @@ class RacquetsMDP(util.MDP):
         self.numDays = numDays
         self.data = readFile(file)
         # TODO: add variable for costs of stringing racquets
-        
+
     # file is a string that is the name of the CSV data file
     # returns a data structure of racquets with their data, grouped by day
     def readFile(file):
-        # TODO: implement function
+        f = open(file, 'r') # to read the file
+        fileReader = csv.reader(f)
+        data = []
+        day = []
+        for lineNum, row in enumerate(fileReader):
+            if lineNum == 0:
+                continue
+            elif lineNum == 1:
+                day.append((row[0], row[1], row[2], row[3], row[4]))
+            else:
+                if row[3] == day[len(day) - 1][3]:
+                    day.append((row[0], row[1], row[2], row[3], row[4]))
+                else:
+                    data.append(day)
+                    day = [(row[0], row[1], row[2], row[3], row[4])]
+        data.append(day)
+        return tuple(data)
 
     # Empty list of racquets at the start of Day 0
     def startState(self):
