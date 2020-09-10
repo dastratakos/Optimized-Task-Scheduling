@@ -10,6 +10,7 @@ We borrowed code structure from blackjack/util.py.
 import math
 import os.path
 import collections, random
+import csv
 
 '''
 class: MDPAlgorithm
@@ -148,6 +149,33 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
             if accum >= target: return i
         raise Exception("Invalid probs: %s" % probs)
 
+    # Clear the memory log (due to some error)
+    # f = open('qStarMemoryLog.csv', 'w')
+    # f.truncate()    
+    # f.close()
+    
+    # Read in past qStar data from qStar memory log
+    f = open('qStarMemoryLog.csv', 'r')
+    fileReader = csv.reader(f)
+    for n, line in enumerate(fileReader):
+        if n == 0: continue
+        stateTup = []
+        stateStr = line[0].split()
+        for i in range(0, len(stateStr), 2):
+            stateStr[i] = str(stateStr[i].strip('()\','))
+            stateStr[i+1] = int(stateStr[i+1].strip('()\','))
+            stateTup.append((stateStr[i], stateStr[i+1]))
+        actionStr = line[1].split()
+        actionTup = []
+        for i in range(0, len(actionStr), 2):
+            actionStr[i] = str(actionStr[i].strip('()\','))
+            actionStr[i+1] = int(actionStr[i+1].strip('()\','))
+            actionTup.append((actionStr[i], actionStr[i+1]))
+        state, action, reward = tuple(stateTup), tuple(actionTup), float(line[2])
+        rl.qStarActions[state] = [action, reward]
+    f.close()
+    print('Before: ', len(rl.qStarActions))
+
     totalRewards = []  # The rewards we get on each trial
     for trial in range(numTrials):
         state = mdp.startState()
@@ -155,7 +183,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
         sarSequence = []
         totalDiscount = 1
         totalReward = 0
-        for iter in range(maxIterations):
+        for i in range(maxIterations):
             action = rl.getAction(state)
             transitions = mdp.succAndProbReward(state, action) # returns one transition because there is only one successor state
             if sort:
@@ -163,7 +191,6 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
             if len(transitions) == 0:
                 rl.incorporateFeedback(state, action, 0, None)
                 break
-
             # Choose a random transition
             i = sample([prob for newState, prob, reward in transitions])
             newState, prob, reward = transitions[i]
@@ -186,5 +213,15 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
             if rl.qStarActions[tuple(s)[0]] == [] or r >= rl.qStarActions[tuple(s)[0]][1]:
                 rl.qStarActions[tuple(s)[0]] = [a, r]
         totalRewards.append(totalReward)
-        
+
+        print('After: ', len(rl.qStarActions))
+        # Write in new qStar data to qStar memory log
+        f = open('qStarMemoryLog.csv', 'w')
+        fileWriter = csv.writer(f)
+        fileWriter.writerow(['State', 'Action', 'Reward'])
+        for key in rl.qStarActions:
+            fileWriter.writerow([str(key), str(rl.qStarActions[key][0]), str(rl.qStarActions[key][1])])
+        f.close()
+        # 
+
     return totalRewards

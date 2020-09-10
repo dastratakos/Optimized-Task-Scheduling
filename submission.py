@@ -265,8 +265,9 @@ Test function for Q-Learning.
 '''
 def testQLearning(mdp):
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount())
-    rewards = util.simulate(mdp, qLearn, 100)
-    
+    rewards = util.simulate(mdp, qLearn, 50)
+    # for i in range(0,300,25):
+    #     print('Average reward, episodes %d - %d: %d' %(i, i+25, sum(rewards[i:i+25]) / 25))    
     qLearn.explorationProb = 0
     
     print('qLearn.qStarActions:')
@@ -306,7 +307,7 @@ def main():
 #    mdp = RacquetsMDP(4, 'test_data_save.csv', 6)
 #    mdp = RacquetsMDP(15, 'training_data.csv', 10)
 #    mdp = RacquetsMDP(13, 'training_data_small.csv', 10)
-    mdp = RacquetsMDP(10, 'training_data_small.csv', 6)
+    mdp = RacquetsMDP(13, 'training_data_big.csv', 6)
     if valueIteration:
         valueIter = testValueIteration(mdp)
     if qLearning:

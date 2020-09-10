@@ -34,9 +34,9 @@ if __name__ == '__main__':
             lineNum = 0
         else:
             dueDateIncrement = 0
-            if row[SERVICE_INDEX] == 'Standard': dueDateIncrement = 3
-            if row[SERVICE_INDEX] == 'Express': dueDateIncrement = 1
-            if row[SERVICE_INDEX] == 'ASAP': dueDateIncrement = 0
+            if row[SERVICE_INDEX] == 'Std': dueDateIncrement = 3
+            if row[SERVICE_INDEX] == 'Exp': dueDateIncrement = 1
+            if row[SERVICE_INDEX] == 'Spd': dueDateIncrement = 0
             dateStr = str(row[DATE_INDEX])
             year = int(dateStr[0:4])
             month = int(dateStr[4:6])
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     orderReceivedKeys = list(orderingDateTime.keys())
     orderReceivedKeys.sort()
     i = 1
-    print('==========FIFO (based on due date) Oracle Ordering==========')
+    print('==========FIFO (based on due date) Baseline Ordering==========')
     for key in orderReceivedKeys:
         for reqID in orderingDateTime[key]:
             print('Priority number %d -----Due on %s at %s----- RequestID: %d || SMT: %s || Service Requested: %s || Date: %s || Time: %s' %(i, key[0:8], key[8:], int(requests[reqID][0]), str(requests[reqID][1]), str(requests[reqID][2]), str(requests[reqID][3]), str(requests[reqID][4])))

@@ -19,7 +19,10 @@ TIME_INDEX = 4      # int  || hour minute
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
+    assert(len(argv) >= 3)
     dataFile = argv[0]
+    maxReqPerDay = int(argv[1])
+    timeFrame = int(argv[2])
     requests = {}
     orderingDateTime = collections.defaultdict(list)
     # try:
@@ -41,13 +44,65 @@ if __name__ == '__main__':
 
     orderReceivedKeys = list(orderingDateTime.keys())
     orderReceivedKeys.sort()
-    i = 1
-    print('==========FIFO (date/time received) Baseline Ordering==========')
+    racquets = []
+    reqIDS = []
     for key in orderReceivedKeys:
         for reqID in orderingDateTime[key]:
-            print('Priority number %d ----- RequestID: %d || SMT: %s || Service Requested: %s || Date: %s || Time: %s' %(i, int(requests[reqID][0]), str(requests[reqID][1]), str(requests[reqID][2]), str(requests[reqID][3]), str(requests[reqID][4])))
-            i += 1
-    print('==========================Complete==========================')
+            racquets.append
+            racquetStr = str(requests[reqID][2])
+            if requests[reqID][1] == 'True': racquetStr += 'SMT'
+            else: racquetStr += 'Reg'
+            daysUntilDue = (1 * (requests[reqID][2] == 'Exp')) + (3 * (requests[reqID][2] == 'Std'))
+            racquets.append(((racquetStr, daysUntilDue), reqID, requests[reqID][3]))
+            reqIDS.append(reqID)
+
+    count = 0
+    endDay = int(racquets[0][2]) - 1 + timeFrame
+    currDay = int(racquets[0][2]) - 1
+    dayList = []
+    fulfilled = []
+    for r in racquets:
+        if count%maxReqPerDay == 0:
+            if dayList: 
+                dayList.sort(key = lambda x: x[0] + str(x[1]))
+                print(dayList, '\n')
+            currDay += 1
+            if currDay > endDay: break
+            print('\n', '-'*70, 'Day %d' %int(count/maxReqPerDay+1), '-'*70)
+            dayList = []
+        dayList.append((r[0][0], int(r[0][1]) - (int(currDay) - int(r[2]))))
+        fulfilled.append(r[1])
+        count += 1
+        if int(count / maxReqPerDay) > timeFrame: break
+
+
+    # i = 0
+    # print('\n', '='*50, 'FIFO (date/time received) Baseline Ordering','='*50)
+    # racquets = []
+    # fulfilled = []
+    # for key in orderReceivedKeys:
+    #     for reqID in orderingDateTime[key]:
+    #         if int(i / maxReqPerDay) > timeFrame: break
+    #         if i % maxReqPerDay == 0:
+    #             if racquets:
+    #                 racquets.sort(key = lambda x: x[0][0] + str(x[0][1]))
+    #                 print([r[0] for r in racquets])
+    #             print('\n', '-'*70, 'Day %d' %int(i/maxReqPerDay+1), '-'*70)
+    #             racquets = []
+
+    #         racquetStr = str(requests[reqID][2])
+    #         if requests[reqID][1] == 'True': racquetStr += 'SMT'
+    #         else: racquetStr += 'Reg'
+    #         daysUntilDue = (1 * (requests[reqID][2] == 'Exp')) + (3 * (requests[reqID][2] == 'Std'))
+    #         racquets.append(((racquetStr, daysUntilDue), reqID))
+    #         fulfilled.append(((racquetStr, daysUntilDue), reqID))
+    #         i+=1
+    #     if int(i / maxReqPerDay) > timeFrame: break
+    # if racquets: 
+    #     racquets.sort(key = lambda x: x[0][0] + str(x[0][1]))
+    #     print([r[0] for r in racquets], '\n')
+
+    # print('='*68, 'Complete', '='*68)
         
 
 
