@@ -70,7 +70,7 @@ class RacquetsMDP(util.MDP):
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
             return [state[0]] # return list of all racquets
         # otherwise, there are more racquets to string that can be strung for that day
-        return combinations(state[0], self.numRacquets)
+        return set(combinations(state[0], self.numRacquets))
 
     # TODO: add a count of number of racquets rejected, then compute probability of that happening
     # Given a |state| and |action|, returns a list of (newState, prob, reward) tuples
@@ -137,18 +137,40 @@ class RacquetsMDP(util.MDP):
 def testMDP():
     print('$'*400)
     mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
-    # mdp.computeStates()
     algorithm = ValueIteration() # implemented for us in util.py
     algorithm.solve(mdp, .001)
     print('*' * 60)
-    states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
-    # for state in states:
-    #     print('state:', state)
-    #     print('  optimal action:', algorithm.pi[state])
-    #     print()
+    # states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
+    states = sorted(algorithm.pi, key=lambda x: len(x)) # sorted by state space
+    for state in states:    # for each possible combination of racquets (disregarding day number)
+        print('state:', state)
+        print('  optimal action:', algorithm.pi[state])
+        print()
     for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
 
-testMDP()
+# Testing what happens when learning a policy
+def learnPolicy():
+    print('='*40, 'Learning a policy', '='*40)
+    mdp = RacquetsMDP(13, 'training_data.csv', 10, 0)
+    # mdp = RacquetsMDP(2, 'test_data_save.csv', float('inf'), 0)
+    algorithm = ValueIteration() # implemented for us in util.py
+    algorithm.solve(mdp, .001)
+    print('*' * 60)
+    return algorithm.pi, algorithm.V
+
+# testMDP()
+# Below is simple code to test whether a policy can be learned over a large amount of test data
+pOpt, vOpt = learnPolicy()
+for state in pOpt.keys():
+    print('-'*15, 'describing a policy', '-'*15)
+    print('State: ', state)
+    print('    Optimal action: ', pOpt[state])
+    print('='*100)
+
+for key in vOpt.keys():
+    print('Optimal value given state: ', key)
+    print('    = ', vOpt[key])
+    print()
 
 '''
 ############################################################

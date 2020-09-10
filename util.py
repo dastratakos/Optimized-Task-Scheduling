@@ -69,6 +69,7 @@ class ValueIteration(MDPAlgorithm):
         mdp.computeStates()
         def computeQ(mdp, V, state, action):
             # Return Q(state, action) based on V(state).
+            if state[0] == (): return 0
             return sum(prob * (reward + mdp.discount() * V[newState]) \
                             for newState, prob, reward in mdp.succAndProbReward(state, action))
 
@@ -78,11 +79,11 @@ class ValueIteration(MDPAlgorithm):
             for state in mdp.states:
                 #print("*****************", mdp.actions(state))
                 print('~'*30, 'Calculating optimal policy for a new state: ', state, '~'*30)
-                for action in set(mdp.actions(state)):
-                    print("==Action: ", action)
-                    print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
-                pi[state] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
-                print('pi[state]: ', pi[state])
+                # for action in set(mdp.actions(state)):
+                #     print("==Action: ", action)
+                #     print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
+                pi[state[0]] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
+                # print('pi[state]: ', pi[state[0]])
             return pi
 
         V = collections.defaultdict(float)  # state -> value of state
@@ -136,6 +137,7 @@ class MDP:
                 for newState, prob, reward in self.succAndProbReward(state, action):
                     if newState not in self.states:
                         self.states.add(newState)
+                        print(len(self.states))
                         queue.append(newState)
         print ("%d states" % len(self.states))
         for state in list(self.states): print('  ', state)
@@ -154,7 +156,6 @@ class NumberLineMDP(MDP):
         return [(state, 0.4, 0),
                 (min(max(state + action, -self.n), +self.n), 0.6, state)]
     def discount(self): return 0.9
-
 ############################################################
 
 
