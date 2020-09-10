@@ -199,7 +199,7 @@ class FixedRLAlgorithm(RLAlgorithm):
 # RL algorithm according to the dynamics of the MDP.
 # Each trial will run for at most |maxIterations|.
 # Return the list of rewards that we get for each trial.
-def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True,
+def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
              sort=False):
     # Return i in [0, ..., len(probs)-1] with probability probs[i].
     def sample(probs):
@@ -235,7 +235,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True,
             totalReward += totalDiscount * reward
             totalDiscount *= mdp.discount()
             state = newState
-#        if verbose:
-        print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
+        if verbose:
+            print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
         totalRewards.append(totalReward)
     return totalRewards
