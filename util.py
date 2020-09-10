@@ -76,7 +76,12 @@ class ValueIteration(MDPAlgorithm):
             # Return the optimal policy given the values V.
             pi = {}
             for state in mdp.states:
+                #print("*****************", mdp.actions(state))
+                for action in mdp.actions(state):
+                    print("action: ", action)
+                    print("xxxxxxxxxxxxx", computeQ(mdp, V, state, action))
                 pi[state] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
+                print("pi[state]: ",pi[state])
             return pi
 
         V = collections.defaultdict(float)  # state -> value of state
