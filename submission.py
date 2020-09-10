@@ -101,7 +101,7 @@ class RacquetsMDP(util.MDP):
     corresponding to the states reachable from |state| when taking |action|.
     If |state| is an end state, returns an empty list [].
     '''
-    def succAndProbReward(self, state, action, bounded=False, bound=5):
+    def succAndProbReward(self, state, action, bounded=True, bound=6):
         # end state when we have processed the last day
         if state[1] == self.numDays + 1: return []
         
@@ -265,7 +265,7 @@ Test function for Q-Learning.
 '''
 def testQLearning(mdp):
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount())
-    rewards = util.simulate(mdp, qLearn, 50)
+    rewards = util.simulate(mdp, qLearn, 500)
     # for i in range(0,300,25):
     #     print('Average reward, episodes %d - %d: %d' %(i, i+25, sum(rewards[i:i+25]) / 25))    
     qLearn.explorationProb = 0
@@ -307,7 +307,8 @@ def main():
 #    mdp = RacquetsMDP(4, 'test_data_save.csv', 6)
 #    mdp = RacquetsMDP(15, 'training_data.csv', 10)
 #    mdp = RacquetsMDP(13, 'training_data_small.csv', 10)
-    mdp = RacquetsMDP(13, 'training_data_big.csv', 6)
+    # mdp = RacquetsMDP(13, 'training_data_big.csv', 6)
+    mdp = RacquetsMDP(13, 'training_data_1211_1.csv', 12)
     if valueIteration:
         valueIter = testValueIteration(mdp)
     if qLearning:

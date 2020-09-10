@@ -139,7 +139,7 @@ RL algorithm according to the dynamics of the MDP.
 Each trial will run for at most |maxIterations|.
 Return the list of rewards that we get for each trial.
 '''
-def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False):
+def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=True, sort=False):
     # Return i in [0, ..., len(probs)-1] with probability probs[i].
     def sample(probs):
         target = random.random()
@@ -153,7 +153,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
     # f = open('qStarMemoryLog.csv', 'w')
     # f.truncate()    
     # f.close()
-    
+
     # Read in past qStar data from qStar memory log
     f = open('qStarMemoryLog.csv', 'r')
     fileReader = csv.reader(f)
@@ -178,6 +178,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True, sort=False
 
     totalRewards = []  # The rewards we get on each trial
     for trial in range(numTrials):
+        print('Trial number: ', trial)
         state = mdp.startState()
         sequence = [state]
         sarSequence = []
