@@ -70,7 +70,7 @@ class ValueIteration(MDPAlgorithm):
         def computeQ(mdp, V, state, action):
             # Return Q(state, action) based on V(state).
             if state == (): return 0
-            return sum(prob * (reward + mdp.discount() * V[newState]) \
+            return sum(prob * (reward + mdp.discount() * V[newState[0]]) \
                             for newState, prob, reward in mdp.succAndProbReward(state, action))
 
         def computeOptimalPolicy(mdp, V):
@@ -78,11 +78,11 @@ class ValueIteration(MDPAlgorithm):
             pi = {}
             for state in mdp.states:
                 #print("*****************", mdp.actions(state))
-                print('~'*30, 'Calculating optimal policy for a new state: ', state, '~'*30)
+                # print('~'*30, 'Calculating optimal policy for a new state: ', state, '~'*30)
                 # for action in set(mdp.actions(state)):
                 #     print("==Action: ", action)
                 #     print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
-#                if state == (): continue
+                if state == (): continue
                 pi[state[0]] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
                 # print('pi[state]: ', pi[state[0]])
             return pi
@@ -93,9 +93,9 @@ class ValueIteration(MDPAlgorithm):
             newV = {}
             for state in mdp.states:
                 # This evaluates to zero for end states, which have no available actions (by definition)
-                newV[state] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
+                newV[state[0]] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
             numIters += 1
-            if max(abs(V[state] - newV[state]) for state in mdp.states) < epsilon:
+            if max(abs(V[state[0]] - newV[state[0]]) for state in mdp.states) < epsilon:
                 V = newV
                 break
             V = newV
@@ -122,31 +122,20 @@ class MDP:
     def succAndProbReward(self, state, action): raise NotImplementedError("Override me")
 
     def discount(self): raise NotImplementedError("Override me")
-    
+
     # Compute set of states reachable from startState.  Helper function for
     # MDPAlgorithms to know which states to compute values and policies for.
     # This function sets |self.states| to be the set of all states.
     def computeStates(self):
-        
-        def notIn(newState, states):
-#            print('^' * 50)
-#            print('states:', states)
-#            print('^' * 50)
-            for state in states:
-#                print('newState:', newState)
-#                print('state:', state)
-                if newState[0] == state[0]: return False
-            return True
-    
         print('=' * 30, 'start computeStates', '=' * 30)
-        self.states = set(self.startState()[0])
+        self.states = set()
         queue = []
+        # self.states.add(self.startState()[0])
         queue.append(self.startState())
         while len(queue) > 0:
             state = queue.pop()
             for action in self.actions(state):
                 for newState, prob, reward in self.succAndProbReward(state, action):
-#                    if notIn(newState, self.states):
                     if newState not in self.states:
                         self.states.add(newState)
                         if len(self.states) % 1000 == 0: print(len(self.states))
@@ -210,7 +199,7 @@ class FixedRLAlgorithm(RLAlgorithm):
 # RL algorithm according to the dynamics of the MDP.
 # Each trial will run for at most |maxIterations|.
 # Return the list of rewards that we get for each trial.
-def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
+def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=True,
              sort=False):
     # Return i in [0, ..., len(probs)-1] with probability probs[i].
     def sample(probs):
@@ -246,7 +235,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
             totalReward += totalDiscount * reward
             totalDiscount *= mdp.discount()
             state = newState
-        if verbose:
-            print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
+#        if verbose:
+        print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
         totalRewards.append(totalReward)
     return totalRewards

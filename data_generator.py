@@ -8,7 +8,7 @@ import numpy as np
 import util, math, random, collections
 
 # FILENAME to write to
-FILE_NAME = 'training_data.csv' 
+FILE_NAME = 'training_data_big.csv' 
 
 # Data labels
 # 	Request ID: 		Integer 	|| range(0, len(numRequests))

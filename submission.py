@@ -104,6 +104,9 @@ class RacquetsMDP(util.MDP):
             for racquet in self.data[state[1]]:
                 if len(racquets) >= self.numRacquets + 5: break ### COMMENT IN/OUT TO SEE DIFFERENCE IN RUN TIME (this sets upper bound on having too many requests built up)
                 racquets.append(racquet)
+        # racquetsCpy = sorted(racquets, key=lambda x: x[0]+str(x[1]))
+        # racquets = racquetsCpy
+        racquets.sort(key = lambda x: x[0]+str(x[1]))        
             
         # compute reward in $, $20 penalty if racquet will be overdue, $10 penalty if racquet will be overdue in following day
         #if requests are same type, then break the tie by assigning slightly higher reward for stringing the older one
@@ -153,7 +156,7 @@ def testMDP():
 # Testing what happens when learning a policy
 def learnPolicy():
     print('='*40, 'Learning a policy', '='*40)
-    mdp = RacquetsMDP(13, 'training_data.csv', 10, 0)       # This tests "training" over a large state space
+    mdp = RacquetsMDP(13, 'training_data_small.csv', 10, 0)       # This tests "training" over a large state space
     # mdp = RacquetsMDP(15, 'training_data.csv', 10, 0)     # Tests training over a smaller state space since can do more racquets per day
     algorithm = ValueIteration() # implemented for us in util.py
     algorithm.solve(mdp, .001)
@@ -165,16 +168,19 @@ def learnPolicy():
 # Below is simple code to test whether a policy can be learned over a large amount of test data
 pOpt, vOpt = learnPolicy()
 ### Uncomment below to see outputs ###
-# for state in pOpt.keys():
-#     print('-'*15, 'describing a policy', '-'*15)
-#     print('State: ', state)
-#     print('    Optimal action: ', pOpt[state])
-#     print('='*100)
+for state in pOpt.keys():
+    print('-'*15, 'describing a policy', '-'*15)
+    print('State: ', state)
+    print('    Optimal action: ', pOpt[state])
+    print('='*100)
 
-# for key in vOpt.keys():
-#     print('Optimal value given state: ', key)
-#     print('    = ', vOpt[key])
-#     print()
+for key in vOpt.keys():
+    print('Optimal value given state: ', key)
+    print('    = ', vOpt[key])
+    print()
+
+bestKey = max(vOpt, key=lambda x: vOpt[x])
+print('Optimal Value === ', vOpt[bestKey], '=== Found from state: ', bestKey)
 
 '''
 ############################################################
