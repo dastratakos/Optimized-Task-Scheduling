@@ -35,7 +35,7 @@ REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}
 SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}
 
 DEFAULT_GENERATE_NUMHOURS = 9
-DEFAULT_NUMDAYS = 1000
+DEFAULT_NUMDAYS = 5
 DEFAULT_STARTDATE = (1, 1, 2019)
 DEFAULT_IN_SEASON = True
 CALENDAR_DICT = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
@@ -120,7 +120,7 @@ def dateCorrectlyFormatted(dateEntry):
 		month = int(month)
 		day = int(day)
 		if CALENDAR_DICT[month] == None or day < 1 or day > CALENDAR_DICT[month]: return False, (None, None, None)
-		return True, (month, day, year)
+		return [True, (month, day, year)]
 	return False, (None, None, None)
 
 

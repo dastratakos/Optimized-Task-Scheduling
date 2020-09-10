@@ -69,7 +69,7 @@ class ValueIteration(MDPAlgorithm):
         mdp.computeStates()
         def computeQ(mdp, V, state, action):
             # Return Q(state, action) based on V(state).
-            if state[0] == (): return 0
+            if state == (): return 0
             return sum(prob * (reward + mdp.discount() * V[newState]) \
                             for newState, prob, reward in mdp.succAndProbReward(state, action))
 
@@ -82,6 +82,7 @@ class ValueIteration(MDPAlgorithm):
                 # for action in set(mdp.actions(state)):
                 #     print("==Action: ", action)
                 #     print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
+                if state == (): continue
                 pi[state[0]] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
                 # print('pi[state]: ', pi[state[0]])
             return pi
@@ -129,7 +130,7 @@ class MDP:
         print('=' * 30, 'start computeStates', '=' * 30)
         self.states = set()
         queue = []
-        self.states.add(self.startState())
+        self.states.add(self.startState()[0])
         queue.append(self.startState())
         while len(queue) > 0:
             state = queue.pop()
@@ -137,10 +138,10 @@ class MDP:
                 for newState, prob, reward in self.succAndProbReward(state, action):
                     if newState not in self.states:
                         self.states.add(newState)
-                        print(len(self.states))
+                        if len(self.states) % 1000 == 0: print(len(self.states))
                         queue.append(newState)
         print ("%d states" % len(self.states))
-        for state in list(self.states): print('  ', state)
+        # for state in list(self.states): print('  ', state)
         print('=' * 30, ' end computeStates ', '=' * 30)
 
 ############################################################

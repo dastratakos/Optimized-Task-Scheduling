@@ -67,6 +67,7 @@ class RacquetsMDP(util.MDP):
     # Return a list of lists representing actions possible from |state|.
     # One action is a list of racquets that represent picking any self.numRacquets (or fewer) racquets.
     def actions(self, state):
+        if state == (): return [0]
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
             return [state[0]] # return list of all racquets
         # otherwise, there are more racquets to string that can be strung for that day
@@ -101,6 +102,7 @@ class RacquetsMDP(util.MDP):
 #        racquets += self.data[state[1]]
         if state[1] <= len(self.data) - 1:
             for racquet in self.data[state[1]]:
+                if len(racquets) >= self.numRacquets + 5: break ### COMMENT IN/OUT TO SEE DIFFERENCE IN RUN TIME (this sets upper bound on having too many requests built up)
                 racquets.append(racquet)
             
         # compute reward in $, $20 penalty if racquet will be overdue, $10 penalty if racquet will be overdue in following day
@@ -151,26 +153,28 @@ def testMDP():
 # Testing what happens when learning a policy
 def learnPolicy():
     print('='*40, 'Learning a policy', '='*40)
-    mdp = RacquetsMDP(13, 'training_data.csv', 10, 0)
-    # mdp = RacquetsMDP(2, 'test_data_save.csv', float('inf'), 0)
+    mdp = RacquetsMDP(13, 'training_data.csv', 10, 0)       # This tests "training" over a large state space
+    # mdp = RacquetsMDP(15, 'training_data.csv', 10, 0)     # Tests training over a smaller state space since can do more racquets per day
     algorithm = ValueIteration() # implemented for us in util.py
     algorithm.solve(mdp, .001)
     print('*' * 60)
     return algorithm.pi, algorithm.V
 
 # testMDP()
+
 # Below is simple code to test whether a policy can be learned over a large amount of test data
 pOpt, vOpt = learnPolicy()
-for state in pOpt.keys():
-    print('-'*15, 'describing a policy', '-'*15)
-    print('State: ', state)
-    print('    Optimal action: ', pOpt[state])
-    print('='*100)
+### Uncomment below to see outputs ###
+# for state in pOpt.keys():
+#     print('-'*15, 'describing a policy', '-'*15)
+#     print('State: ', state)
+#     print('    Optimal action: ', pOpt[state])
+#     print('='*100)
 
-for key in vOpt.keys():
-    print('Optimal value given state: ', key)
-    print('    = ', vOpt[key])
-    print()
+# for key in vOpt.keys():
+#     print('Optimal value given state: ', key)
+#     print('    = ', vOpt[key])
+#     print()
 
 '''
 ############################################################
