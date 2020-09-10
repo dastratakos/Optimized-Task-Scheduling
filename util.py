@@ -76,6 +76,10 @@ class ValueIteration(MDPAlgorithm):
             # Return the optimal policy given the values V.
             pi = {}
             for state in mdp.states:
+                print('(computeQ(mdp, V, state, action), action) for action in mdp.actions(state)')
+                temp = list((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))
+                for i in range(len(temp)):
+                    print(temp[i])
                 pi[state] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
             return pi
 
@@ -119,6 +123,7 @@ class MDP:
     # MDPAlgorithms to know which states to compute values and policies for.
     # This function sets |self.states| to be the set of all states.
     def computeStates(self):
+        print('start computeStates')
         self.states = set()
         queue = []
         self.states.add(self.startState())
@@ -130,8 +135,10 @@ class MDP:
                     if newState not in self.states:
                         self.states.add(newState)
                         queue.append(newState)
-        # print "%d states" % len(self.states)
-        # print self.states
+        print('end computeStates')
+        print("%d states" % len(self.states))
+        for i in self.states:
+            print(i)
 
 ############################################################
 

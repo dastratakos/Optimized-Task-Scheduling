@@ -4,72 +4,102 @@ File: submission.py
 This file contains our implementations of value iteration and Q-learning.
 '''
 
-import util, math, random
+import util, math, random, csv
 from collections import defaultdict
 from util import ValueIteration
 from itertools import combinations
 
 class RacquetsMDP(util.MDP):
-    def __init__(self, numRacquets, numDays, file):
+    def __init__(self, numRacquets, file, numDays, returnProb):
         """
         numRacquets: number of racquets that can be string in a day
         numDays: number of days to consider
+        data: tuple of racquet job request data
+        returnProb: probability that a customer is unsatisfied with job
         """
         self.numRacquets = numRacquets
-        self.numDays = numDays
-        self.data = readFile(file)
+        self.data = self.readFile(file)
+        self.numDays = min(numDays, len(self.data))
+        self.returnProb = returnProb
         # TODO: add variable for costs of stringing racquets
 
     # file is a string that is the name of the CSV data file
     # returns a data structure of racquets with their data, grouped by day
-    def readFile(file):
+    # data structure is a tuple of lists; each list represents one day of
+    #   racquet intakes as a list of tuples; each tuple is a racquet
+    def readFile(self, file):
         f = open(file, 'r') # to read the file
         fileReader = csv.reader(f)
         data = []
-        day = []
+        day = set()
+        currDate = 0
         for lineNum, row in enumerate(fileReader):
             if lineNum == 0:
                 continue
             elif lineNum == 1:
-                day.append((row[0], row[1], row[2], row[3], row[4]))
+                day.add((row[0], row[1], row[2], row[3], row[4]))
+                currDate = row[3]
             else:
-                if row[3] == day[len(day) - 1][3]:
-                    day.append((row[0], row[1], row[2], row[3], row[4]))
+                if row[3] == currDate:
+                    day.add((row[0], row[1], row[2], row[3], row[4]))
                 else:
                     data.append(day)
-                    day = [(row[0], row[1], row[2], row[3], row[4])]
+                    day = set((row[0], row[1], row[2], row[3], row[4]))
+                    currDate = row[3]
         data.append(day)
-        return tuple(data)
+#        return tuple(data)
+        return data
 
-    # Empty list of racquets at the start of Day 0
+    # Start state is an empty list of racquets at the start of Day 0
     def startState(self):
-        return ([], 0)
+        return ((), 0)
 
-    # Return a list of strings representing actions possible from |state|.
-    # One action is a tuple of indices that represent picking any 15 (or less) racquets.
+    '''
+    NOTE: might need to check for empty list of racquets
+    '''
+    # Return a list of lists representing actions possible from |state|.
+    # One action is a list of racquet IDs that represent picking any 15 (or less) racquets.
     def actions(self, state):
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
-            return range(len(state[0])) # return list of indices of all racquets
-        # otherwise, there are more racquets to string that can be strung for that day
-        return combinations(range(len(state[0])), self.numRacquets)
+            return [state[0]] # return list of IDs of all racquets
+        # otherwise, there are more racquets to string that can be strung for that dayp
+        return combinations(state[0], self.numRacquets)
 
-    # Given a |state| and |action|, return a list of (newState, prob, reward) tuples
+    # TODO: add a count of number of racquets rejected, then compute probability of that happening
+    # Given a |state| and |action|, returns a list of (newState, prob, reward) tuples
     # corresponding to the states reachable from |state| when taking |action|.
-    # Remember that if |state| is an end state, you should return an empty list [].
+    # If |state| is an end state, returns an empty list [].
     def succAndProbReward(self, state, action):
         if state[1] == self.numDays: return [] # end state
         
+        racquetIDs = set(state[0])
+        
         # remove racquets based on the action and compute reward of stringing those racquets
-        # (add in probability of customer unsatisfied -> transition probabilities)
+        racquetIDs -= set(action)
+        
+        # TODO: (add in probability of customer unsatisfied -> transition probabilities)
         
         # add new racquets for next day
         # (generate new data -> transition probabilities?)
-        
-        return [(1, 0.15, 200), (-1, 0.85, 10)]
+        racquetIDs |= self.data[state[1]]
+        return [((tuple(racquetIDs), state[1] + 1), 1, 1000)]
 
     # Set the discount factor (float or integer).
     def discount(self):
         return 1
+        
+def testMDP():
+    mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
+    mdp.computeStates()
+    print('*' * 30, 'middle of code', '*' * 30)
+    algorithm = ValueIteration() # implemented for us in util.py
+    print('*' * 30, 'you suck', '*' * 30)
+    algorithm.solve(mdp, .001)
+
+print('start of code')
+testMDP()
+print('end of code')
+
 '''
 ############################################################
 # Reference Blackjack Problem 4b: convergence of Q-learning
