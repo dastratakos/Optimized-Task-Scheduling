@@ -155,7 +155,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
         self.explorationProb = explorationProb
         self.weights = defaultdict(float)
         self.numIters = 0
-        self.qStarAction = defaultdict(list)
+        self.qStarActions = defaultdict(list)
 
     # Return the Q function associated with the weights and features
     def getQ(self, state, action):
@@ -164,11 +164,14 @@ class QLearningAlgorithm(util.RLAlgorithm):
         score += self.weights[tuple(f)] * v
         return score
 
+    # Sets QStar to a policy (after running simulation)
     def setQStar(self, policy):
-        self.qStarAction = policy
+        self.qStarActions = policy
 
-    def getQStarActions():
-        return self.qStarAction
+    # # Returns an action from QStar[state]
+    # def getQStarAction(self, state):
+    #     if self.qStarActions[state] == []: return None
+    #     return self.qStarActions[state][0]
 
     # This algorithm will produce an action given a state.
     # Here we use the epsilon-greedy algorithm: with probability
@@ -179,9 +182,6 @@ class QLearningAlgorithm(util.RLAlgorithm):
             return random.choice(list(self.actions(state)))
         else:
             return max((self.getQ(state, action), action) for action in self.actions(state))[1]
-
-    def qStarAction(self, state):
-        return qStarAction[state]
 
     # Call this function to get the step size to update the weights.
     def getStepSize(self):
@@ -223,14 +223,12 @@ largeMDP = RacquetsMDP()
 '''
 def simulate_QL_over_MDP(mdp, featureExtractor):
     # Q-learning
-    # mdp.computeStates()
+    mdp.computeStates()
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), featureExtractor)
     r, qStar = util.simulate(mdp, qLearn, 1000)
     qLearn.setQStar(qStar)
-    for line in qLearn.qStarAction:
-        print(line, ':', qLearn.qStarAction[line])
-    # value iteration
-    # mdp.computeStates()
+    # for line in qLearn.qStarAction:
+    #     print(line, ':', qLearn.qStarAction[line])
     valueIter = ValueIteration()
     valueIter.solve(mdp)
     
@@ -239,12 +237,15 @@ def simulate_QL_over_MDP(mdp, featureExtractor):
     # compare
     diff = 0.0
     for state in valueIter.pi:
-        if qLearn.qStarAction[state] != [] and valueIter.pi[state] != qLearn.qStarAction[state][0]:
-            # print(valueIter.pi[state], qLearn.qStarAction[state])
+        if qLearn.qStarActions[state] != [] and valueIter.pi[state] != qLearn.qStarActions[state][0]:
             diff += 1
-    print(diff)
-    print(len(valueIter.pi))
-    print('Difference:', diff / len(valueIter.pi))
+        elif qLearn.qStarActions[state] != [] and valueIter.pi[state] == qLearn.qStarActions[state][0]:
+            print('Same policy mapping \n\t STATE---', state, '\n\t\t--- to action ---', valueIter.pi[state])
+    print('Number of different policy instructions: ', diff)
+    print('Length of pi_valueIter: ', len(valueIter.pi))
+    print('Length of pi_QStar: ', len(qLearn.qStarActions))
+    print('Difference over length of pi_valueIter:', diff / len(valueIter.pi))
+    print('Difference over length of pi_QStar:', diff / len(qLearn.qStarActions))
     # END_YOUR_CODE
 # '''
 
