@@ -5,10 +5,11 @@ import sys
 import csv
 import sklearn
 import numpy as np
-import util, math, random, collections
+import util, math, random
+import datetime
 
 # FILENAME to write to
-FILE_NAME = 'training_data_big.csv' 
+FILE_NAME = 'training_data_' + str(datetime.datetime.now()) + '.csv' 
 
 # Data labels
 # 	Request ID: 		Integer 	|| range(0, len(numRequests))
@@ -31,14 +32,42 @@ SUNDAY_HOURS = 5
 REGULAR_HOURS = 9
 REQUESTS_PER_WEEK = 93.1818
 REQUESTS_PER_HOUR = REQUESTS_PER_WEEK / ((REGULAR_HOURS*6) + (SUNDAY_HOURS*1))
-REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}
-SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}
+REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}		# DEFAULT
+# REGULAR_REQ_WEIGHTS = {'Std': 0.5, 'Exp': 0.42, 'Spd': 0.08}		# HIGH FREQ EXP
+# REGULAR_REQ_WEIGHTS = {'Std': 0.4, 'Exp': 0.09, 'Spd': 0.51}		# HIGH FREQ SPD
+SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}			# DEFAULT
+# SMT_REQ_WEIGHTS = {'Spd': 0.5, 'Exp': 0.25, 'Std': 0.25}			# HIGH FREQ SPD
+MAX_DAILY_REQ = 25
+MIN_DAILY_REQ = 10
 
 DEFAULT_GENERATE_NUMHOURS = 9
-DEFAULT_NUMDAYS = 5
+DEFAULT_NUMDAYS = 6
 DEFAULT_STARTDATE = (1, 1, 2019)
 DEFAULT_IN_SEASON = True
 CALENDAR_DICT = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
+
+# Function: Weighted Random Choice
+# --------------------------------
+# Given a dictionary of the form element -> weight, selects an element
+# randomly based on distribution proportional to the weights. Weights can sum
+# up to be more than 1. 
+def weightedRandomChoice(weightDict):
+    weights = []
+    elems = []
+    for elem in sorted(weightDict):
+        weights.append(weightDict[elem])
+        elems.append(elem)
+    total = sum(weights)
+    key = random.uniform(0, total)
+    runningTotal = 0.0
+    chosenIndex = None
+    for i in range(len(weights)):
+        weight = weights[i]
+        runningTotal += weight
+        if runningTotal > key:
+            chosenIndex = i
+            return elems[chosenIndex]
+    raise Exception('Should not reach here')
 
 
 
@@ -57,14 +86,22 @@ def generateData(numHours, numDays, startDate, inSeason):
 	reqID_Count = 0
 	for day in range(numDays):
 		reqList = np.random.poisson(REQUESTS_PER_HOUR, numHours)		# reqList is a list where each index (hourNum) contains number of requests during that hour
+		while sum(reqList) < MIN_DAILY_REQ: reqList = np.random.poisson(REQUESTS_PER_HOUR, numHours)
+		dailyReq = 0
+		print(reqList)
 		print('------------------------------')
 		print('Day number:', day + 1)
 		print('Request Breakdown: ', reqList)
-		print('Total Number of Requests in %d hours: %d' % (numHours, sum(reqList)))
+		print('Total Number of Requests in %d hours: %d' % (numHours, min(sum(reqList), MAX_DAILY_REQ)))
 
-		date[1] += 1
 		for hour, reqAtHour in enumerate(reqList):
+			if dailyReq > MAX_DAILY_REQ: continue
+
 			for i in range(reqAtHour):
+				if dailyReq > MAX_DAILY_REQ: 
+					continue
+				else: dailyReq += 1
+
 				# Request ID Index
 				reqID_Count += 1
 
@@ -73,8 +110,8 @@ def generateData(numHours, numDays, startDate, inSeason):
 
 				# Service Requested
 				serviceReq = None
-				if StanfordMensTennis: serviceReq = util.weightedRandomChoice(SMT_REQ_WEIGHTS)
-				else: serviceReq = util.weightedRandomChoice(REGULAR_REQ_WEIGHTS)
+				if StanfordMensTennis: serviceReq = weightedRandomChoice(SMT_REQ_WEIGHTS)
+				else: serviceReq = weightedRandomChoice(REGULAR_REQ_WEIGHTS)
 
 				# Date
 				if date[1] > CALENDAR_DICT[date[0]]:
@@ -105,12 +142,12 @@ def generateData(numHours, numDays, startDate, inSeason):
 
 				newData = [reqID_Count, StanfordMensTennis, serviceReq, dateInt, time]
 				w.writerow(newData)
+		date[1] += 1
 
 	f.close()
 
 def dateCorrectlyFormatted(dateEntry):
 	date = dateEntry.split('/')
-	print(date)
 	if len(date) == 3:
 		year = date[2]
 		month = date[0]
