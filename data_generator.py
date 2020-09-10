@@ -8,7 +8,7 @@ import numpy as np
 import util, math, random, collections
 
 # FILENAME to write to
-FILE_NAME = 'test_data.csv' 
+FILE_NAME = 'training_data_big.csv' 
 
 # Data labels
 # 	Request ID: 		Integer 	|| range(0, len(numRequests))
@@ -31,13 +31,13 @@ SUNDAY_HOURS = 5
 REGULAR_HOURS = 9
 REQUESTS_PER_WEEK = 93.1818
 REQUESTS_PER_HOUR = REQUESTS_PER_WEEK / ((REGULAR_HOURS*6) + (SUNDAY_HOURS*1))
-REGULAR_REQ_WEIGHTS = {'Standard': 0.9, 'Express': 0.09, 'Speedy': 0.01}
-SMT_REQ_WEIGHTS = {'Speedy': 0.1, 'Express': 0.35, 'Standard': 0.55}
+REGULAR_REQ_WEIGHTS = {'Std': 0.9, 'Exp': 0.09, 'Spd': 0.01}
+SMT_REQ_WEIGHTS = {'Spd': 0.1, 'Exp': 0.35, 'Std': 0.55}
 
-DEFAULT_GENERATE_NUMHOURS = 5
-DEFAULT_NUMDAYS = 1
-DEFAULT_STARTDATE = (1, 1)
-DEFAULT_IN_SEASON = False
+DEFAULT_GENERATE_NUMHOURS = 9
+DEFAULT_NUMDAYS = 5
+DEFAULT_STARTDATE = (1, 1, 2019)
+DEFAULT_IN_SEASON = True
 CALENDAR_DICT = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
 
 
@@ -120,7 +120,7 @@ def dateCorrectlyFormatted(dateEntry):
 		month = int(month)
 		day = int(day)
 		if CALENDAR_DICT[month] == None or day < 1 or day > CALENDAR_DICT[month]: return False, (None, None, None)
-		return True, (month, day, year)
+		return [True, (month, day, year)]
 	return False, (None, None, None)
 
 

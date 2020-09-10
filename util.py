@@ -69,14 +69,22 @@ class ValueIteration(MDPAlgorithm):
         mdp.computeStates()
         def computeQ(mdp, V, state, action):
             # Return Q(state, action) based on V(state).
-            return sum(prob * (reward + mdp.discount() * V[newState]) \
+            if state == (): return 0
+            return sum(prob * (reward + mdp.discount() * V[newState[0]]) \
                             for newState, prob, reward in mdp.succAndProbReward(state, action))
 
         def computeOptimalPolicy(mdp, V):
             # Return the optimal policy given the values V.
             pi = {}
             for state in mdp.states:
-                pi[state] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
+                #print("*****************", mdp.actions(state))
+                # print('~'*30, 'Calculating optimal policy for a new state: ', state, '~'*30)
+                # for action in set(mdp.actions(state)):
+                #     print("==Action: ", action)
+                #     print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
+                if state == (): continue
+                pi[state[0]] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
+                # print('pi[state]: ', pi[state[0]])
             return pi
 
         V = collections.defaultdict(float)  # state -> value of state
@@ -85,9 +93,9 @@ class ValueIteration(MDPAlgorithm):
             newV = {}
             for state in mdp.states:
                 # This evaluates to zero for end states, which have no available actions (by definition)
-                newV[state] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
+                newV[state[0]] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
             numIters += 1
-            if max(abs(V[state] - newV[state]) for state in mdp.states) < epsilon:
+            if max(abs(V[state[0]] - newV[state[0]]) for state in mdp.states) < epsilon:
                 V = newV
                 break
             V = newV
@@ -119,9 +127,10 @@ class MDP:
     # MDPAlgorithms to know which states to compute values and policies for.
     # This function sets |self.states| to be the set of all states.
     def computeStates(self):
+        print('=' * 30, 'start computeStates', '=' * 30)
         self.states = set()
         queue = []
-        self.states.add(self.startState())
+        # self.states.add(self.startState()[0])
         queue.append(self.startState())
         while len(queue) > 0:
             state = queue.pop()
@@ -129,9 +138,11 @@ class MDP:
                 for newState, prob, reward in self.succAndProbReward(state, action):
                     if newState not in self.states:
                         self.states.add(newState)
+                        if len(self.states) % 1000 == 0: print(len(self.states))
                         queue.append(newState)
-        # print "%d states" % len(self.states)
-        # print self.states
+        print ("%d states" % len(self.states))
+        # for state in list(self.states): print('  ', state)
+        print('=' * 30, ' end computeStates ', '=' * 30)
 
 ############################################################
 
@@ -146,7 +157,6 @@ class NumberLineMDP(MDP):
         return [(state, 0.4, 0),
                 (min(max(state + action, -self.n), +self.n), 0.6, state)]
     def discount(self): return 0.9
-
 ############################################################
 
 
@@ -201,12 +211,16 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
         raise Exception("Invalid probs: %s" % probs)
 
     totalRewards = []  # The rewards we get on each trial
+    policyMap = collections.defaultdict(list)    # To update best policy from state, {state:policy}
     for trial in range(numTrials):
+        if trial % 100 == 0: print('episode number: ', trial)
         state = mdp.startState()
         sequence = [state]
+        # SASsequence = [state]
+        SASsequence = []
         totalDiscount = 1
         totalReward = 0
-        for _ in range(maxIterations):
+        for i in range(maxIterations):
             action = rl.getAction(state)
             transitions = mdp.succAndProbReward(state, action)
             if sort: transitions = sorted(transitions)
@@ -215,17 +229,28 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
                 break
 
             # Choose a random transition
+            # print(transitions)
             i = sample([prob for newState, prob, reward in transitions])
             newState, prob, reward = transitions[i]
             sequence.append(action)
             sequence.append(reward)
             sequence.append(newState)
+            SASsequence.append((state, action, reward))
+            # SASsequence.append(action)
+            # SASsequence.append(newState)
 
             rl.incorporateFeedback(state, action, reward, newState)
+            if policyMap[state[0]] == [] or reward >= policyMap[state[0]][1]: policyMap[state[0]] = [action, reward]
             totalReward += totalDiscount * reward
             totalDiscount *= mdp.discount()
             state = newState
         if verbose:
             print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
+        for s, a, r in SASsequence:
+            list(s[0]).sort(key = lambda x: x[0]+str(x[1]))
+            list(a).sort(key = lambda x: x[0]+str(x[1]))
+            if policyMap[tuple(s)[0]] == [] or r >= policyMap[tuple(s)[0]][1]: policyMap[tuple(s)[0]] = [a, r]
+        # if policyMap[state] == [] or totalReward >= policyMap[state][1]: policyMap[state] = (SASsequence, totalReward)
         totalRewards.append(totalReward)
-    return totalRewards
+
+    return totalRewards, policyMap
