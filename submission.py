@@ -31,23 +31,30 @@ class RacquetsMDP(util.MDP):
         f = open(file, 'r') # to read the file
         fileReader = csv.reader(f)
         data = []
-        day = set()
+        day = []
         currDate = 0
         for lineNum, row in enumerate(fileReader):
+            daysUntilDue = (1*(row[2] == 'Exp')) + (3*(row[2] == 'Std'))
+            reqType = row[2]
+            if row[1] == 'TRUE': reqType += 'SMT'
+            else: reqType += 'Reg'
             if lineNum == 0:
                 continue
             elif lineNum == 1:
-                day.add((row[0], row[1], row[2], row[3], row[4]))
+                day.append((reqType, daysUntilDue))
                 currDate = row[3]
             else:
                 if row[3] == currDate:
-                    day.add((row[0], row[1], row[2], row[3], row[4]))
+                    day.append((reqType, daysUntilDue))
                 else:
+                    print(day)
                     data.append(day)
-                    day = set((row[0], row[1], row[2], row[3], row[4]))
+                    day = []
+                    day.append((reqType, daysUntilDue))
                     currDate = row[3]
         data.append(day)
 #        return tuple(data)
+#        for n, d in enumerate(data): print(n, ' : ', d)
         return data
 
     # Start state is an empty list of racquets at the start of Day 0
@@ -62,7 +69,7 @@ class RacquetsMDP(util.MDP):
     def actions(self, state):
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
             return [state[0]] # return list of IDs of all racquets
-        # otherwise, there are more racquets to string that can be strung for that dayp
+        # otherwise, there are more racquets to string that can be strung for that day
         return combinations(state[0], self.numRacquets)
 
     # TODO: add a count of number of racquets rejected, then compute probability of that happening
