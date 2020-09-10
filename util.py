@@ -213,13 +213,14 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
     totalRewards = []  # The rewards we get on each trial
     policyMap = collections.defaultdict(list)    # To update best policy from state, {state:policy}
     for trial in range(numTrials):
+        if trial % 100 == 0: print('episode number: ', trial)
         state = mdp.startState()
         sequence = [state]
         # SASsequence = [state]
         SASsequence = []
         totalDiscount = 1
         totalReward = 0
-        for _ in range(maxIterations):
+        for i in range(maxIterations):
             action = rl.getAction(state)
             transitions = mdp.succAndProbReward(state, action)
             if sort: transitions = sorted(transitions)
@@ -228,6 +229,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
                 break
 
             # Choose a random transition
+            # print(transitions)
             i = sample([prob for newState, prob, reward in transitions])
             newState, prob, reward = transitions[i]
             sequence.append(action)
@@ -238,12 +240,17 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
             # SASsequence.append(newState)
 
             rl.incorporateFeedback(state, action, reward, newState)
+            if policyMap[state[0]] == [] or reward >= policyMap[state[0]][1]: policyMap[state[0]] = [action, reward]
             totalReward += totalDiscount * reward
             totalDiscount *= mdp.discount()
             state = newState
         if verbose:
             print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
-        if policyMap[state] == [] or totalReward >= policyMap[state][1]: policyMap[state] = (SASsequence, totalReward)
+        for s, a, r in SASsequence:
+            list(s[0]).sort(key = lambda x: x[0]+str(x[1]))
+            list(a).sort(key = lambda x: x[0]+str(x[1]))
+            if policyMap[tuple(s)[0]] == [] or r >= policyMap[tuple(s)[0]][1]: policyMap[tuple(s)[0]] = [a, r]
+        # if policyMap[state] == [] or totalReward >= policyMap[state][1]: policyMap[state] = (SASsequence, totalReward)
         totalRewards.append(totalReward)
 
     return totalRewards, policyMap

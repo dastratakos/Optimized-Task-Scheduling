@@ -4,7 +4,7 @@ File: submission.py
 This file contains our implementations of value iteration and Q-learning.
 '''
 
-import util, math, random, csv
+import util, math, random, csv, timeit
 from collections import defaultdict
 from util import ValueIteration
 from itertools import combinations
@@ -105,8 +105,6 @@ class RacquetsMDP(util.MDP):
             for racquet in self.data[state[1]]:
                 if len(racquets) >= self.numRacquets + 5: break ### COMMENT IN/OUT TO SEE DIFFERENCE IN RUN TIME (this sets upper bound on having too many requests built up)
                 racquets.append(racquet)
-        # racquetsCpy = sorted(racquets, key=lambda x: x[0]+str(x[1]))
-        # racquets = racquetsCpy
         racquets.sort(key = lambda x: x[0]+str(x[1]))        
             
         # compute reward in $, $20 penalty if racquet will be overdue, $10 penalty if racquet will be overdue in following day
@@ -157,15 +155,20 @@ class QLearningAlgorithm(util.RLAlgorithm):
         self.explorationProb = explorationProb
         self.weights = defaultdict(float)
         self.numIters = 0
+        self.qStarAction = defaultdict(list)
 
     # Return the Q function associated with the weights and features
     def getQ(self, state, action):
         score = 0.0
         f, v = self.featureExtractor(state, action)
-        # print('f:', f, 'v:', v)
-        # print('weights', self.weights[f])
         score += self.weights[tuple(f)] * v
         return score
+
+    def setQStar(self, policy):
+        self.qStarAction = policy
+
+    def getQStarActions():
+        return self.qStarAction
 
     # This algorithm will produce an action given a state.
     # Here we use the epsilon-greedy algorithm: with probability
@@ -176,6 +179,9 @@ class QLearningAlgorithm(util.RLAlgorithm):
             return random.choice(list(self.actions(state)))
         else:
             return max((self.getQ(state, action), action) for action in self.actions(state))[1]
+
+    def qStarAction(self, state):
+        return qStarAction[state]
 
     # Call this function to get the step size to update the weights.
     def getStepSize(self):
@@ -193,7 +199,6 @@ class QLearningAlgorithm(util.RLAlgorithm):
             target += self.discount * max(qOpt)
         prediction = self.getQ(state, action)
         name, value = self.featureExtractor(state, action)
-        # print(name)
         self.weights[name] -= self.getStepSize() * (prediction - target) * value
         # END_YOUR_CODE
 
@@ -215,28 +220,33 @@ smallMDP = RacquetsMDP()
 # Large test case
 #largeMDP = BlackjackMDP(cardValues=[1, 3, 5, 8, 10], multiplicity=3, threshold=40, peekCost=1)
 largeMDP = RacquetsMDP()
-
+'''
 def simulate_QL_over_MDP(mdp, featureExtractor):
     # Q-learning
-    mdp.computeStates()
+    # mdp.computeStates()
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), featureExtractor)
-    util.simulate(mdp, qLearn, 30000)
-    
+    r, qStar = util.simulate(mdp, qLearn, 1000)
+    qLearn.setQStar(qStar)
+    for line in qLearn.qStarAction:
+        print(line, ':', qLearn.qStarAction[line])
     # value iteration
-    mdp.computeStates()
+    # mdp.computeStates()
     valueIter = ValueIteration()
     valueIter.solve(mdp)
     
     qLearn.explorationProb = 0
 
     # compare
-    diff = 0
+    diff = 0.0
     for state in valueIter.pi:
-        if valueIter.pi[state] != qLearn.getAction(state):
+        if qLearn.qStarAction[state] != [] and valueIter.pi[state] != qLearn.qStarAction[state][0]:
+            # print(valueIter.pi[state], qLearn.qStarAction[state])
             diff += 1
+    print(diff)
+    print(len(valueIter.pi))
     print('Difference:', diff / len(valueIter.pi))
     # END_YOUR_CODE
-'''
+# '''
 
         
 def testMDP():
@@ -253,7 +263,7 @@ def testMDP():
     # for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
     # '''
     qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), identityFeatureExtractor)
-    rewards, policyMap = util.simulate(mdp, qLearn, 30000)
+    rewards, policyMap = util.simulate(mdp, qLearn, 1000)
     for state in policyMap.keys():
         print('*'*100)
         print('If you are in this state: ', state)
@@ -276,7 +286,28 @@ def testMDP():
 #     print('*' * 60)
 #     return algorithm.pi, algorithm.V
 
-testMDP()
+# testMDP()
+start = timeit.default_timer()
+
+# mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0.10)
+mdp = RacquetsMDP(13, 'training_data_small.csv', 7, 0.10)
+# mdp.computeStates()
+# qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), identityFeatureExtractor)
+# rewards, policyMap = util.simulate(mdp, qLearn, 1000)
+# qLearn.qStarAction = policyMap
+# for state in policyMap.keys():
+#     print('*'*100)
+#     print('If you are in this state: ', state)
+#     print('    Policy is to take this action: ', policyMap[state][0])
+#     print('        Expected reward: ', policyMap[state][1])
+# print('='*30, 'Our Q* policy has -', len(policyMap.keys()), '- total state:action pairs', '='*30)
+# sortedRewards = sorted(rewards)
+# print(len(rewards))
+# for i in range(100):
+#     print(-(i + 1) * 10, sortedRewards[-(i + 1) * 10])
+simulate_QL_over_MDP(mdp, identityFeatureExtractor)
+
+
 
 # Below is simple code to test whether a policy can be learned over a large amount of test data
 # pOpt, vOpt = learnPolicy()
