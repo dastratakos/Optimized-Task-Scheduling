@@ -4,7 +4,7 @@ File: submission.py
 This file contains our implementations of value iteration and Q-learning.
 '''
 
-import util, math, random, csv, timeit
+import util, math, random, csv
 from collections import defaultdict
 from util import ValueIteration
 from itertools import combinations
@@ -59,7 +59,8 @@ class RacquetsMDP(util.MDP):
 
     # Start state is an empty list of racquets at the start of Day 0
     def startState(self):
-        return ((), 0)
+        # return ((), 0)
+        return ((tuple(self.data[0]), 1))
 
     '''
     NOTE: might need to check for empty list of racquets
@@ -71,7 +72,7 @@ class RacquetsMDP(util.MDP):
         if len(state[0]) < self.numRacquets: # all racquets can be strung for that day
             return [state[0]] # return list of all racquets
         # otherwise, there are more racquets to string that can be strung for that day
-        return tuple(set(combinations(state[0], self.numRacquets)))
+        return set(combinations(state[0], self.numRacquets))
 
     # TODO: add a count of number of racquets rejected, then compute probability of that happening
     # Given a |state| and |action|, returns a list of (newState, prob, reward) tuples
@@ -138,36 +139,8 @@ class RacquetsMDP(util.MDP):
     # Set the discount factor (float or integer).
     def discount(self):
         return 1
-        
-def testMDP():
-    print('$'*400)
-    mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
-    algorithm = ValueIteration() # implemented for us in util.py
-    algorithm.solve(mdp, .001)
-    print('*' * 60)
-    # states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
-    states = sorted(algorithm.pi, key=lambda x: len(x)) # sorted by state space
-    for state in states:    # for each possible combination of racquets (disregarding day number)
-        print('state:', state)
-        print('  optimal action:', algorithm.pi[state])
-        print()
-    for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
 
-# Testing what happens when learning a policy
-def learnPolicy():
-    print('='*40, 'Learning a policy', '='*40)
-#    mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0)
-#    mdp = RacquetsMDP(13, 'training_data_big.csv', 10, 0)
-    mdp = RacquetsMDP(13, 'training_data_small.csv', 10, 0)       # This tests "training" over a large state space
-#    mdp = RacquetsMDP(15, 'training_data_small.csv', 10, 0)     # Tests training over a smaller state space since can do more racquets per day
-    algorithm = ValueIteration() # implemented in util.py
-    algorithm.solve(mdp, .001)
-    print('*' * 60)
-    return algorithm.pi, algorithm.V
-
-
-
-
+# '''
 #############################################################################################################################
 
 # Performs Q-learning.  Read util.RLAlgorithm for more information.
@@ -187,9 +160,11 @@ class QLearningAlgorithm(util.RLAlgorithm):
 
     # Return the Q function associated with the weights and features
     def getQ(self, state, action):
-        score = 0
-        for f, v in self.featureExtractor(state, action):
-            score += self.weights[f] * v
+        score = 0.0
+        f, v = self.featureExtractor(state, action)
+        # print('f:', f, 'v:', v)
+        # print('weights', self.weights[f])
+        score += self.weights[tuple(f)] * v
         return score
 
     # This algorithm will produce an action given a state.
@@ -198,7 +173,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
     def getAction(self, state):
         self.numIters += 1
         if random.random() < self.explorationProb:
-            return random.choice(self.actions(state))
+            return random.choice(list(self.actions(state)))
         else:
             return max((self.getQ(state, action), action) for action in self.actions(state))[1]
 
@@ -217,26 +192,29 @@ class QLearningAlgorithm(util.RLAlgorithm):
             qOpt = [self.getQ(newState, action) for action in self.actions(newState)]
             target += self.discount * max(qOpt)
         prediction = self.getQ(state, action)
-        for name, value in self.featureExtractor(state, action):
-            self.weights[name] -= self.getStepSize() * (prediction - target) * value
+        name, value = self.featureExtractor(state, action)
+        # print(name)
+        self.weights[name] -= self.getStepSize() * (prediction - target) * value
         # END_YOUR_CODE
 
 # Return a single-element list containing a binary (indicator) feature
 # for the existence of the (state, action) pair.  Provides no generalization.
 def identityFeatureExtractor(state, action):
-    featureKey = (state, action)
+    # print(state[0])
+    featureKey = (tuple(state[0]), action)
     featureValue = 1
-    return [(featureKey, featureValue)]
+    return featureKey, featureValue
 
+'''
 ############################################################
 # Reference Blackjack Problem 4b: convergence of Q-learning
 # Small test case
 # smallMDP = BlackjackMDP(cardValues=[1, 5], multiplicity=2, threshold=10, peekCost=1)
-#smallMDP = RacquetsMDP()
+smallMDP = RacquetsMDP()
 
 # Large test case
 #largeMDP = BlackjackMDP(cardValues=[1, 3, 5, 8, 10], multiplicity=3, threshold=40, peekCost=1)
-#largeMDP = RacquetsMDP()
+largeMDP = RacquetsMDP()
 
 def simulate_QL_over_MDP(mdp, featureExtractor):
     # Q-learning
@@ -258,46 +236,62 @@ def simulate_QL_over_MDP(mdp, featureExtractor):
             diff += 1
     print('Difference:', diff / len(valueIter.pi))
     # END_YOUR_CODE
-
-
-
-
-
-
-
-
-# testMDP()
-start = timeit.default_timer()
-
-mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0.10)
-mdp.computeStates()
-qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), identityFeatureExtractor)
-rewards = util.simulate(mdp, qLearn, 30000)
-sortedRewards = sorted(rewards)
-for i in range(20):
-    print(-(i + 1) * 100, sortedRewards[-(i + 1) * 100])
-
-
 '''
+
+        
+def testMDP():
+    print('$'*400)
+    mdp = RacquetsMDP(4, 'test_data_save.csv', 6, 0.10)
+    algorithm = ValueIteration() # implemented for us in util.py
+    algorithm.solve(mdp, .001)
+    print('*' * 60)
+    # states = sorted(algorithm.pi, key=lambda x: x[1]) # sort by day
+    states = sorted(algorithm.pi, key=lambda x: len(x)) # sorted by state space
+    for state in states:
+        print('state:', state)
+        print('\toptimal action:', algorithm.pi[state])
+    # for item in list(algorithm.V): print(item, '--------', algorithm.V[item])
+    # '''
+    qLearn = QLearningAlgorithm(mdp.actions, mdp.discount(), identityFeatureExtractor)
+    rewards, policyMap = util.simulate(mdp, qLearn, 30000)
+    for state in policyMap.keys():
+        print('*'*100)
+        print('If you are in this state: ', state)
+        print('    Policy is to take this action: ', policyMap[state][0])
+        print('        Expected reward: ', policyMap[state][1])
+    print('='*30, 'We have -', len(policyMap.keys()), '- total state:policy pairs', '='*30)
+    # for n, reward in enumerate(rewards):
+    #     print(n, '===', reward)
+    # print(max(rewards))
+    # '''
+
+
+# # Testing what happens when learning a policy
+# def learnPolicy():
+#     print('='*40, 'Learning a policy', '='*40)
+#     mdp = RacquetsMDP(13, 'training_data_small.csv', 10, 0)       # This tests "training" over a large state space
+#     # mdp = RacquetsMDP(15, 'training_data.csv', 10, 0)     # Tests training over a smaller state space since can do more racquets per day
+#     algorithm = ValueIteration() # implemented for us in util.py
+#     algorithm.solve(mdp, .001)
+#     print('*' * 60)
+#     return algorithm.pi, algorithm.V
+
+testMDP()
+
 # Below is simple code to test whether a policy can be learned over a large amount of test data
-pOpt, vOpt = learnPolicy()
+# pOpt, vOpt = learnPolicy()
 ### Uncomment below to see outputs ###
-for state in pOpt.keys():
-    print('-'*15, 'describing a policy', '-'*15)
-    print('State: ', state)
-    print('    Optimal action: ', pOpt[state])
-    print('='*100)
+# for state in pOpt.keys():
+#     print('-'*15, 'describing a policy', '-'*15)
+#     print('State: ', state)
+#     print('    Optimal action: ', pOpt[state])
+#     print('='*100)
 
-for key in vOpt.keys():
-    print('Optimal value given state: ', key)
-    print('    = ', vOpt[key])
-    print()
+# for key in vOpt.keys():
+#     print('Optimal value given state: ', key)
+#     print('    = ', vOpt[key])
+#     print()
 
-bestKey = max(vOpt, key=lambda x: vOpt[x])
-print('Optimal Value === ', vOpt[bestKey], '===')
-print('\tFound from state: ', bestKey)
-'''
+# bestKey = max(vOpt, key=lambda x: vOpt[x])
+# print('Optimal Value === ', vOpt[bestKey], '=== Found from state: ', bestKey)
 
-stop = timeit.default_timer()
-print()
-print('Time:', stop - start, 'sec')

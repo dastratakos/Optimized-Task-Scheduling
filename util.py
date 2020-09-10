@@ -211,9 +211,12 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
         raise Exception("Invalid probs: %s" % probs)
 
     totalRewards = []  # The rewards we get on each trial
+    policyMap = collections.defaultdict(list)    # To update best policy from state, {state:policy}
     for trial in range(numTrials):
         state = mdp.startState()
         sequence = [state]
+        # SASsequence = [state]
+        SASsequence = []
         totalDiscount = 1
         totalReward = 0
         for _ in range(maxIterations):
@@ -230,6 +233,9 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
             sequence.append(action)
             sequence.append(reward)
             sequence.append(newState)
+            SASsequence.append((state, action, reward))
+            # SASsequence.append(action)
+            # SASsequence.append(newState)
 
             rl.incorporateFeedback(state, action, reward, newState)
             totalReward += totalDiscount * reward
@@ -237,5 +243,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=1000, verbose=False,
             state = newState
         if verbose:
             print(("Trial %d (totalReward = %s): %s" % (trial, totalReward, sequence)))
+        if policyMap[state] == [] or totalReward >= policyMap[state][1]: policyMap[state] = (SASsequence, totalReward)
         totalRewards.append(totalReward)
-    return totalRewards
+
+    return totalRewards, policyMap
