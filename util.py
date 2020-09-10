@@ -82,7 +82,7 @@ class ValueIteration(MDPAlgorithm):
                 # for action in set(mdp.actions(state)):
                 #     print("==Action: ", action)
                 #     print("==Corresponding Q-Val: ", computeQ(mdp, V, state, action))
-                if state == (): continue
+#                if state == (): continue
                 pi[state[0]] = max((computeQ(mdp, V, state, action), action) for action in mdp.actions(state))[1]
                 # print('pi[state]: ', pi[state[0]])
             return pi
@@ -122,20 +122,31 @@ class MDP:
     def succAndProbReward(self, state, action): raise NotImplementedError("Override me")
 
     def discount(self): raise NotImplementedError("Override me")
-
+    
     # Compute set of states reachable from startState.  Helper function for
     # MDPAlgorithms to know which states to compute values and policies for.
     # This function sets |self.states| to be the set of all states.
     def computeStates(self):
+        
+        def notIn(newState, states):
+#            print('^' * 50)
+#            print('states:', states)
+#            print('^' * 50)
+            for state in states:
+#                print('newState:', newState)
+#                print('state:', state)
+                if newState[0] == state[0]: return False
+            return True
+    
         print('=' * 30, 'start computeStates', '=' * 30)
-        self.states = set()
+        self.states = set(self.startState()[0])
         queue = []
-        self.states.add(self.startState()[0])
         queue.append(self.startState())
         while len(queue) > 0:
             state = queue.pop()
             for action in self.actions(state):
                 for newState, prob, reward in self.succAndProbReward(state, action):
+#                    if notIn(newState, self.states):
                     if newState not in self.states:
                         self.states.add(newState)
                         if len(self.states) % 1000 == 0: print(len(self.states))
