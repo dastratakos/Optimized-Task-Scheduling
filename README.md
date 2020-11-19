@@ -3,8 +3,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![Apache-2.0 License][license-shield]][license-url]
 
 <div align="center">
     <h2 style="font-size: 50px; font-weight: bold; margin: 0px;">
@@ -13,7 +12,7 @@
     <h2 style="font-size: 30px; margin: 0px;">
     	Dean Stratakos, Kento Perera, and Timothy Sah
     </h2>
-    <a href="(mailto:dstratak@stanford.edu,kperera1@stanford.edu,tsah@stanford.edu)">{kperera1, tsah, dstratak}@stanford.edu</a>
+    <a href="(mailto:dstratak@stanford.edu,kperera1@stanford.edu,tsah@stanford.edu)">{dstratak, kperera1, tsah}@stanford.edu</a>
     <br />
 	A reinforcement learning model for a
 	<a href="https://stanford-cs221.github.io/autumn2019/">Stanford CS 221</a>
@@ -246,6 +245,8 @@ information.
 
 Dean Stratakos, Kento Perera, and Timothy Sah -
 [{dstatak, kperera1, tsah}@stanford.edu](mailto:dstratak@stanford.edu,kperera1@stanford.edu,tsah@stanford.edu)
+
+Dean Stratakos: [![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
