@@ -79,7 +79,7 @@ stringing racquets and minimizes the implicit costs of missing deadlines.
 
 ### Poster
 
-<img src="Poster.pdf" title="Poster" alt="Poster" width="400" />
+<img align="center" src="Poster.png" title="Poster" alt="Poster" />
 
 <!-- CONTACT -->
 ## Details
