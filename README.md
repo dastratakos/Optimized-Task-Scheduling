@@ -12,6 +12,7 @@
     <h2 style="font-size: 30px; margin: 0px;">
     	Dean Stratakos, Kento Perera, and Timothy Sah
     </h2>
+    <h3>December 13, 2020</h3>
     <a href="(mailto:dstratak@stanford.edu,kperera1@stanford.edu,tsah@stanford.edu)">{dstratak, kperera1, tsah}@stanford.edu</a>
     <br />
 	A reinforcement learning model for a
