@@ -6,9 +6,9 @@
 [![Apache-2.0 License][license-shield]][license-url]
 
 <div align="center">
-    <h2 style="font-size: 50px; font-weight: bold; margin: 0px;">
-        Optimizing task scheduling for small businesses using reinforcement learning
-    </h2>
+    <h1 style="font-size: 30px; margin: 0px;">
+    	Optimizing task scheduling for small businesses using reinforcement learning
+    </h1>
     <h2 style="font-size: 30px; margin: 0px;">
     	Dean Stratakos, Kento Perera, and Timothy Sah
     </h2>
