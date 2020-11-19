@@ -18,7 +18,7 @@
 	<a href="https://stanford-cs221.github.io/autumn2019/">Stanford CS 221</a>
 	final project.
 	<br />
-    <a href="Report.pdf">
+    <a href="documents/Report.pdf">
         Read the report
     </a>
     ·
@@ -79,7 +79,7 @@ stringing racquets and minimizes the implicit costs of missing deadlines.
 
 ### Poster
 
-<img align="center" src="Poster.png" title="Poster" alt="Poster" />
+<img align="center" src="documents/Poster.png" title="Poster" alt="Poster" />
 
 <!-- CONTACT -->
 ## Details
