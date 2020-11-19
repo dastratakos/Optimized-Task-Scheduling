@@ -259,6 +259,6 @@ Dean Stratakos: [![LinkedIn][linkedin-shield]][linkedin-url]
 [issues-shield]: https://img.shields.io/github/issues/dastratakos/Optimized-Task-Scheduling.svg?style=flat-square
 [issues-url]: https://github.com/dastratakos/Optimized-Task-Scheduling/issues
 [license-shield]: https://img.shields.io/github/license/dastratakos/Optimized-Task-Scheduling.svg?style=flat-square
-[license-url]: https://github.com/dastratakos/Optimized-Task-Scheduling/blob/main/LICENSE
+[license-url]: https://github.com/dastratakos/Optimized-Task-Scheduling/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/dean-stratakos-8b338b149
