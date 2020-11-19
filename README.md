@@ -86,13 +86,13 @@ stringing racquets and minimizes the implicit costs of missing deadlines.
 ## Details
 
 Below is information regarding the following files:
-- [data_generator.py](#data_generator.py)
-- [baseline_fifo_reward.py](#baseline_fifo_reward.py)
-- [baseline_random_reward.py](#baseline_random_reward.py)
-- [model.py](#model.py)
-- [util.py](#util.py)
-- [create_graph.py](#create_graph.py)
-- [qStarMemoryLog.csv](#qStarMemoryLog.csv)
+- [`data_generator.py`](#data_generator.py)
+- [`baseline_fifo_reward.py`](#baseline_fifo_reward.py)
+- [`baseline_random_reward.py`](#baseline_random_reward.py)
+- [`model.py`](#model.py)
+- [`util.py`](#util.py)
+- [`create_graph.py`](#create_graph.py)
+- [`qStarMemoryLog.csv`](#qStarMemoryLog.csv)
 
 ---
 
