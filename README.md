@@ -23,7 +23,7 @@
     </a>
     ·
     <a href="https://github.com/dastratakos/Optimized-Task-Scheduling/issues">
-        Request Feature
+        Request a feature
     </a>
 </div>
 
