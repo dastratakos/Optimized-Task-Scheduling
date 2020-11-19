@@ -9,7 +9,7 @@ import util, math, random
 import datetime
 
 # FILENAME to write to
-FILE_NAME = 'training_data_' + str(datetime.datetime.now()) + '.csv' 
+FILE_NAME = 'data/training_data_' + str(datetime.datetime.now()) + '.csv' 
 
 # Data labels
 # 	Request ID: 		Integer 	|| range(0, len(numRequests))

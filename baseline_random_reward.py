@@ -20,7 +20,7 @@ Calculates the reward using FIFO algorithm.
 def main():
     start = timeit.default_timer()
     
-    f = open("training_data_TEST2.csv", 'r') # to read the file
+    f = open("data/training_data_TEST2.csv", 'r') # to read the file
 
     fileReader = csv.reader(f)
     data = []

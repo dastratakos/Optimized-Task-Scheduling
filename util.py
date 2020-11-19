@@ -151,12 +151,12 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=False, sort=False
         raise Exception("Invalid probs: %s" % probs)
 
     # Clear the memory log (if error occurs)
-    # f = open('qStarMemoryLog.csv', 'w')
+    # f = open('data/qStarMemoryLog.csv', 'w')
     # f.truncate()    
     # f.close()
 
     # Read in past qStar data from qStar memory log
-    f = open('qStarMemoryLog.csv', 'r')
+    f = open('data/qStarMemoryLog.csv', 'r')
     fileReader = csv.reader(f)
     for n, line in enumerate(fileReader):
         if n == 0: continue
@@ -178,9 +178,9 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=False, sort=False
 
     datafile = None
     if writeData:       # creates a file so that we can write new data that tracks Q-learning progress for each episode
-        with open('plotdata_trainingDataTEST2.csv', 'w') as newfile:
+        with open('data/plotdata_trainingDataTEST2.csv', 'w') as newfile:
             newfile.close()
-        datafile = open('plotdata_trainingDataTEST2.csv', 'w')
+        datafile = open('data/plotdata_trainingDataTEST2.csv', 'w')
         dfWriter = csv.writer(datafile)
 
     # print('Before: ', len(rl.qStarActions))
@@ -232,7 +232,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=False, sort=False
     datafile.close()
 
     # Write in new qStar data to qStar memory log
-    f = open('qStarMemoryLog.csv', 'w')
+    f = open('data/qStarMemoryLog.csv', 'w')
     fileWriter = csv.writer(f)
     fileWriter.writerow(['State', 'Action', 'Reward'])
     for key in rl.qStarActions:
@@ -241,7 +241,7 @@ def simulate(mdp, rl, numTrials=10, maxIterations=100, verbose=False, sort=False
     # 
 
     # Back-up the memory log (in case some error occurs)
-    # f = open('qStarMemoryLogCpy.csv', 'w')
+    # f = open('data/qStarMemoryLogCpy.csv', 'w')
     # f.truncate()    
     # f.close()
 
